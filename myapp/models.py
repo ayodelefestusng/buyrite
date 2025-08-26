@@ -79,8 +79,19 @@ class User(AbstractBaseUser, PermissionsMixin):
 from django.db import models
 
 class Category(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(unique=True,max_length=100)
     image = models.ImageField(upload_to='category_images/')
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['name']  # Orders categories alphabetically by name
+
+
+class Carousel(models.Model):
+    name = models.CharField(unique=True,max_length=100)
+    image = models.ImageField(upload_to='carosel_images/')
 
     def __str__(self):
         return self.name

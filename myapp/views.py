@@ -6,14 +6,15 @@ from django.http import (
     HttpResponseRedirect,
     HttpResponseServerError
 )
-from .models import Category
+from .models import Category,Carousel
 
 
 # Create your views here.
 def home(request):
    
    categories = Category.objects.all() 
-   context={"categories":categories}
+   carousels = Carousel.objects.all() 
+   context={"categories":categories,"carousels":carousels,}
    return render(request,"home.html", context)
 
 
