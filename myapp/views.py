@@ -29,5 +29,22 @@ class HomeView(ListView):
         context = super().get_context_data(**kwargs)
         context['carousels'] = Carousel.objects.all()
         return context
+    
+
 def car_view(request):
     return render(request, 'car.html')
+
+
+# views.py
+from django.shortcuts import render, redirect
+from .forms import PostForm
+
+def create_post(request):
+    if request.method == 'POST':
+        form = PostForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('home')  # Replace with your actual URL
+    else:
+        form = PostForm()
+    return render(request, 'create_post.html', {'form': form})
