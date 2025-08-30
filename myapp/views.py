@@ -227,3 +227,68 @@ class VehicleDetailView(DetailView):
         context['created_ago'] = created_ago
         return context
 
+#Gemini 
+# myapp/views.py
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
+from .forms import VehicleForm
+from .models import VehicleModel, Trim, Town, Vehicle, User
+from django.template.loader import render_to_string
+from django.contrib import messages
+
+@login_required
+def upload_vehicle(request):
+    if request.method == 'POST':
+        form = VehicleForm(request.POST, request.FILES)
+        if form.is_valid():
+            vehicle = form.save(commit=False)
+            vehicle.seller = request.user # Automatically link the logged-in user
+            
+            # Auto-populate contact_phone if not provided and user has a phone number
+            if not vehicle.contact_phone and hasattr(request.user, 'phone') and request.user.phone:
+                vehicle.contact_phone = request.user.phone
+
+            vehicle.save()
+            form.save_m2m() # Save ManyToMany relationships after the main object is saved
+            messages.success(request, 'Vehicle uploaded successfully!')
+            return redirect('upload_vehicle_success') # Redirect to a success page or list
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = VehicleForm()
+        # Initial querysets for dynamic fields when form is first loaded (GET request)
+        # These will be empty or set to defaults
+        form.fields['vehicle_model'].queryset = VehicleModel.objects.none()
+        form.fields['trim'].queryset = Trim.objects.none()
+        form.fields['town'].queryset = Town.objects.none()
+
+    return render(request, 'myapp/upload_vehicle.html', {'form': form})
+
+# HTMX endpoints for dynamic dropdowns
+
+def load_models(request):
+    brand_id = request.GET.get('brand') # The name attribute of the select element
+    models = VehicleModel.objects.filter(brand_id=brand_id).order_by('name')
+    # Render partial HTML for vehicle_model select field
+    html = render_to_string('myapp/partials/vehicle_model_options.html', {'models': models})
+    # HTMX expects the entire updated element, not just options
+    return HttpResponse(f'<div id="div_id_vehicle_model" class="mb-3">{html}</div>')
+
+def load_trims(request):
+    model_id = request.GET.get('vehicle_model') # The name attribute of the select element
+    trims = Trim.objects.filter(vehicle_model_id=model_id).order_by('name')
+    # Render partial HTML for trim select field
+    html = render_to_string('myapp/partials/trim_options.html', {'trims': trims})
+    return HttpResponse(f'<div id="div_id_trim" class="mb-3">{html}</div>')
+
+def load_towns(request):
+    state_id = request.GET.get('state') # The name attribute of the select element
+    towns = Town.objects.filter(state_id=state_id).order_by('name')
+    # Render partial HTML for town select field
+    html = render_to_string('myapp/partials/town_options.html', {'towns': towns})
+    return HttpResponse(f'<div id="div_id_town" class="mb-3">{html}</div>')
+
+@login_required
+def upload_vehicle_success(request):
+    return render(request, 'myapp/upload_success.html')
