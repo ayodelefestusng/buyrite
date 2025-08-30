@@ -50,6 +50,20 @@ class User(AbstractBaseUser, PermissionsMixin):
     mfa_secret = models.CharField(max_length=16, blank=True, null=True)
     mfa_enabled = models.BooleanField(default=False)
 
+    
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='myapp_users',  # <-- Add this line
+        blank=True,
+        help_text='The groups this user belongs to.'
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='myapp_user_permissions',  # <-- Add this line
+        blank=True,
+        help_text='Specific permissions for this user.'
+    )
+
 
     objects = CustomUserManager()
 

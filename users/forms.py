@@ -47,9 +47,9 @@ class RegistrationForm(forms.ModelForm):
         
             Field('email'),
             # This is the custom div with id "ayo"
-            HTML('<div class="text-danger mt-2" id="username-err">This is the extra div content!</div>'),
-             HTML('<div class="custom-divider">-- Divider Between Names --</div>'),
-             HTML('<p>More content inside the "ayo" div.</p>'),
+            HTML('<div class="text-danger mt-2" id="username-err"> </div>'),
+            #  HTML('<div class="custom-divider">-- Divider Between Names --</div>'),
+            #  HTML('<p>More content inside the "ayo" div.</p>'),
             Field('full_name'),
         )
 

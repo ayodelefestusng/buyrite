@@ -150,7 +150,7 @@ def user_login(request):
 
                 otp_uri = pyotp.totp.TOTP(user.mfa_secret).provisioning_uri(
                     name=user.email,
-                    issuer_name="RELUCENT"
+                    issuer_name="BUYRITE"
                 )
 
                 qr = qrcode.make(otp_uri)
@@ -185,7 +185,7 @@ def profile_view(request):
 
         otp_uri = pyotp.totp.TOTP(user.mfa_secret).provisioning_uri(
             name=user.email,
-            issuer_name="AGOBA DIGNITY"
+            issuer_name="BUY RITE"
         )
 
         qr = qrcode.make(otp_uri)
@@ -252,7 +252,7 @@ def reset_qr(request):
     
         otp_uri = pyotp.totp.TOTP(user.mfa_secret).provisioning_uri(
             name=email,
-            issuer_name="AGOBA DIGNITY"
+            issuer_name="BUY RITE"
         )
 
         qr = qrcode.make(otp_uri)

@@ -46,10 +46,17 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
       'myapp',  # 👈 Add this line
+      'users',
          'django.contrib.humanize',
 
       'livereload',
 
+
+ 'django_otp',
+    'crispy_bootstrap5',
+    'django_otp.plugins.otp_totp',
+    'django_otp.plugins.otp_static',
+    'crispy_forms',
 
 ]
 
@@ -119,7 +126,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = 'Africa/Lagos'
 
 USE_I18N = True
 
@@ -137,7 +144,7 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-AUTH_USER_MODEL = 'myapp.User'
+AUTH_USER_MODEL = 'users.User'
 
 
 # Static and media
@@ -153,3 +160,25 @@ MEDIA_URL = '/media/'
 
 # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+SITE_ID = 1
+
+
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
+
+LOGIN_REDIRECT_URL = 'home'
+LOGIN_URL = 'login'
+LOGOUT_REDIRECT_URL = 'login'
+
+
+
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
