@@ -87,7 +87,7 @@ admin.site.register(Town)
 @admin.register(Vehicle)
 class VehicleAdmin(admin.ModelAdmin):
     list_display = (
-        'seller', 'brand', 'vehicle_model', 'trim', 'manufacture_year',
+       "pk", 'seller', 'brand', 'vehicle_model', 'trim', 'manufacture_year',
         'condition', 'fuel_option', 'color', 'engine_type', 'drive_terrain',
         'state', 'town', 'price', 'is_available',"slug"
     )

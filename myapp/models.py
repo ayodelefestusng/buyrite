@@ -19,6 +19,15 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings # Still needed if CustomUser remains primary for other features
 from django.core.validators import MaxValueValidator
+from django.contrib.auth import get_user_model
+
+# Inside your view
+User = get_user_model()
+
+
+
+
+
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -126,7 +135,11 @@ class Post(models.Model):
     tags = models.ManyToManyField(Tag)
 
 
+# Extend the default User model with a property to check if they are a dealer
+def get_is_dealer(self):
+    return hasattr(self, 'dealerprofile')
 
+User.add_to_class('is_dealer', property(get_is_dealer))
 
 # class Customer(AbstractUser):
 #     is_seller = models.BooleanField(default=False)
@@ -232,6 +245,13 @@ class Color(models.Model):
 
     def __str__(self):
         return self.name
+class InnerColor(models.Model):
+    name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name
+
+
 
 class EngineType(models.Model):
     name = models.CharField(max_length=50)
@@ -656,6 +676,7 @@ import os
 class Vehicle(models.Model):
     # ForeignKey fields
     seller = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    # seller = models.ForeignKey(User, on_delete=models.CASCADE)
     category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True)
     brand = models.ForeignKey('Brand', on_delete=models.SET_NULL, null=True)
     vehicle_model = models.ForeignKey('VehicleModel', on_delete=models.SET_NULL, null=True)
@@ -664,6 +685,7 @@ class Vehicle(models.Model):
     condition = models.ForeignKey('Condition', on_delete=models.SET_NULL, null=True)
     fuel_option = models.ForeignKey('FuelOption', on_delete=models.SET_NULL, null=True)
     color = models.ForeignKey('Color', on_delete=models.SET_NULL, null=True)
+    inner_color = models.ForeignKey('InnerColor', on_delete=models.SET_NULL, null=True)
     engine_type = models.ForeignKey('EngineType', on_delete=models.SET_NULL, null=True)
     drive_terrain = models.ForeignKey('DriveTerrain', on_delete=models.SET_NULL, null=True)
     state = models.ForeignKey('State', on_delete=models.SET_NULL, null=True)
@@ -835,3 +857,18 @@ class Article(models.Model):
 
     def __str__(self):
         return self.title
+    
+
+
+
+# New: DealerProfile model to store dealer-specific info
+class DealerProfile(models.Model):
+    # user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    business_logo = models.ImageField(upload_to='dealer_logos/', null=True, blank=True)
+    business_address = models.CharField(max_length=255)
+    state = models.ForeignKey(State, on_delete=models.SET_NULL, null=True)
+    town = models.ForeignKey(Town, on_delete=models.SET_NULL, null=True)
+
+    def __str__(self):
+        return self.user.username

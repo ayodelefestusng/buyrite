@@ -165,42 +165,7 @@
     </div>
 
         <!-- Second Grid -->
-            <div class="col">Grid 1 - Item 2
-
-              <div class="merchant_details ">
-                <div class="card mb-3" style="max-width: 540px;">
-  <div class="row g-0">
-    <div class="col-md-4">
-      <img src="{% static 'images/icons/gear.jpg' %}" class="img-fluid rounded-start" alt="merchant picture">
-    </div>
-    <div class="col-md-8">
-      <div class="card-body">
-        <h5 class="card-title">{{ user.full_name }}</h5>
-        <p class="card-text">{{ user.full_name }}</p>
-        <p class="card-text"><small class="text-body-secondary">Last updated 3 mins ago</small></p>
-      </div>
-    </div>
-    <div class="caveaet">
-      <div class="text-sm-center">
-        <p class="justify-content-center">Safety tips</p>
-       </div>
-      
-      <ul>
-        <li> Avoid sending any prepayments</li>
-        <li>Meet with the seller at a safe public place</li>
-        <li>Inspect what you're going to buy to make sure it's what you need</li>
-        <li>Check all the docs and only pay if you're satisfied</li>
-      </ul>
-    </div>
-  </div>
-</div>
-
-{{ user.full_name }}
-{{ user.image }}
-
-              <img src="" alt="">
-              </div>
-            </div>
+            <div class="col">Grid 1 - Item 2</div>
 
       </div>
 </div>

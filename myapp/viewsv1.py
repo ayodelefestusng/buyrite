@@ -23,7 +23,7 @@ from django.urls import reverse
 from django.apps import apps
 from .models import (
     Vehicle, Category, State, Town, Brand, VehicleModel, Trim, DealerProfile, InnerColor,
-    ManufactureYear, FuelOption, Color, EngineType, DriveTerrain, Vas
+    ManufactureYear, FuelOption, Color, EngineType, DriveTerrain, VAS
 )
 from django.contrib.auth import get_user_model
 from .forms import VehicleForm, DealerRegistrationForm, AdminToolForm
@@ -778,7 +778,7 @@ def operations_view(request):
         ('InnerColor', InnerColor),
         ('EngineType', EngineType),
         ('DriveTerrain', DriveTerrain),
-        ('VAS', Vas),
+        ('VAS', VAS),
         ('State', State),
         ('Town', Town),
     ]
@@ -853,7 +853,7 @@ def handle_admin_tool_form(request, model_name):
         'InnerColor': InnerColor,
         'EngineType': EngineType,
         'DriveTerrain': DriveTerrain,
-        'VAS': Vas,
+        'VAS': VAS,
         'State': State,
         'Town': Town,
     }
