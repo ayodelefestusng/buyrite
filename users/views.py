@@ -210,26 +210,18 @@ def verify_2fa_otp(user, otp):
 
 
 def verify_mfa(request):
-    # email = request.POST.get('email')
-    # print ("aleko",request)
-
-    # try:
-    #     user = User.objects.get(email=email)
-    # except User.DoesNotExist:
-    #     messages.error(request, 'User not founds.')
-    #     return redirect('login')
-
     if request.method == 'POST':
         otp = request.POST.get('otp_code')
         print ("otp",otp)
         email = request.POST.get('email')
         print ("email",email)
-
-        user = User.objects.get(email=email)
-       
         
 
+        user = User.objects.get(email=email)
+        print ("Alejo",user)
+       
         if verify_2fa_otp(user, otp):
+            print ("dkdkdkdk")
             login(request, user)  # ✅ Only log in after successful OTP
             messages.success(request, 'Login successful with 2FA!')
             return redirect('home')

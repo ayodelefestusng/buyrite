@@ -70,6 +70,12 @@ path('articles/', ArticleListView.as_view(), name='list'),
     path('operations/approve/<int:pk>/', approve_dealer, name='approve_dealer'),
     path('operations/reject/<int:pk>/', reject_dealer, name='reject_dealer'),
     path('operations/admin-tool/<str:model_name>/', handle_admin_tool_form, name='handle_admin_tool_form'),
+
+#API
+path("get-vehicle-image/", VehicleImageView.as_view(), name="get_vehicle_image"),
+  path("api/vin-search/", VINImageSearchView.as_view(), name="vin_search")  ,
+   path("api2/<str:vin>/", VINImageDrive, name="vin_drive")  
 ]
+
 
 

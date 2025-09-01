@@ -25,7 +25,10 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
-
+from django.urls import reverse
+import uuid
+import hashlib
+from django.utils.text import slugify
 
 
 class CustomUserManager(BaseUserManager):
@@ -195,16 +198,19 @@ class Brand(models.Model):
 
     def __str__(self):
         return self.name
-    
+    class Meta:
+        ordering = ['name']  # Orders categories alphabetically by name
+
 
 
 # Linked to a brand (e.g., Corolla under Toyota).
 class VehicleModel(models.Model):
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE)
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100,unique=True)
 
     class Meta:
         unique_together = ('brand', 'name')
+        ordering = ['name'] 
 
     def __str__(self):
         # return f"{self.brand.name} {self.name}"
@@ -218,6 +224,7 @@ class Trim(models.Model):
 
     class Meta:
         unique_together = ('vehicle_model', 'name')
+        ordering = ['name'] 
 
     def __str__(self):
         return f"{self.vehicle_model} {self.name}"
@@ -227,29 +234,33 @@ class ManufactureYear(models.Model):
 
     def __str__(self):
         return str(self.year)
-
-class Condition(models.Model):
-    name = models.CharField(max_length=50)
-
-    def __str__(self):
-        return self.name
+    class Meta:
+        ordering = ['year']  # Orders categories alphabetically by name
 
 class FuelOption(models.Model):
     name = models.CharField(max_length=50)
 
     def __str__(self):
         return self.name
+    class Meta:
+        ordering = ['name'] 
 
 class Color(models.Model):
     name = models.CharField(max_length=50)
+    hex_code = models.CharField(max_length=7, blank=True, null=True)
 
     def __str__(self):
         return self.name
+    
+    class Meta:
+        ordering = ['name'] 
 class InnerColor(models.Model):
     name = models.CharField(max_length=50)
 
     def __str__(self):
         return self.name
+    class Meta:
+        ordering = ['name'] 
 
 
 
@@ -258,15 +269,34 @@ class EngineType(models.Model):
 
     def __str__(self):
         return self.name
+    class Meta:
+        ordering = ['name'] 
 
 class DriveTerrain(models.Model):
     name = models.CharField(max_length=50)
 
     def __str__(self):
         return self.name
+    class Meta:
+        ordering = ['name'] 
+
+class Condition(models.Model):
+    name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name
+    class Meta:
+        ordering = ['name'] 
 
 class Vas(models.Model):
     name = models.CharField(max_length=100)
+
+    class Meta:
+        verbose_name = "Value Added Service"
+        verbose_name_plural = "Value Added Services"
+
+        ordering = ['name'] 
+
 
     def __str__(self):
         return self.name
@@ -276,6 +306,8 @@ class State(models.Model):
 
     def __str__(self):
         return self.name
+    class Meta:
+        ordering = ['name'] 
 
 class Town(models.Model):
     name = models.CharField(max_length=100)
@@ -283,6 +315,8 @@ class Town(models.Model):
 
     def __str__(self):
         return f"{self.name}, {self.state.name}"
+    class Meta:
+        ordering = ['name'] 
     
 BOOLEAN_CHOICES = [
     ('yes', 'Yes'),
@@ -726,6 +760,19 @@ class Vehicle(models.Model):
     image10 = models.ImageField(upload_to='vehicles/', blank=True, null=True)
 
     # Availability and tracking
+
+     # Hash fields for image uniqueness validation
+    image_hash = models.CharField(max_length=64, unique=True, null=True, blank=True)
+    image2_hash = models.CharField(max_length=64, unique=True, null=True, blank=True)
+    image3_hash = models.CharField(max_length=64, unique=True, null=True, blank=True)
+    image4_hash = models.CharField(max_length=64, unique=True, null=True, blank=True)
+    image5_hash = models.CharField(max_length=64, unique=True, null=True, blank=True)
+    image6_hash = models.CharField(max_length=64, unique=True, null=True, blank=True)
+    image7_hash = models.CharField(max_length=64, unique=True, null=True, blank=True)
+    image8_hash = models.CharField(max_length=64, unique=True, null=True, blank=True)
+    image9_hash = models.CharField(max_length=64, unique=True, null=True, blank=True)
+    image10_hash = models.CharField(max_length=64, unique=True, null=True, blank=True)
+
     is_available = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     date_sold = models.DateTimeField(blank=True, null=True)
@@ -797,11 +844,12 @@ class Vehicle(models.Model):
         # Finally, save the object to the database (only once!)
         super().save(*args, **kwargs)
 
-    def __str__(self):
+    # def __str__(self):
         return f"{self.brand.name} {self.vehicle_model.name} {self.trim.name} ({self.manufacture_year.year})"
 
 
-
+    class Meta:
+            ordering = ['created_at'] 
 
 # class Vehicle(models.Model):
 #     seller = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -869,6 +917,8 @@ class DealerProfile(models.Model):
     business_address = models.CharField(max_length=255)
     state = models.ForeignKey(State, on_delete=models.SET_NULL, null=True)
     town = models.ForeignKey(Town, on_delete=models.SET_NULL, null=True)
+    is_confirmed = models.BooleanField(default=False)
+    is_rejected = models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.username

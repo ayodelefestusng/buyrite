@@ -57,6 +57,8 @@ INSTALLED_APPS = [
     'django_otp.plugins.otp_totp',
     'django_otp.plugins.otp_static',
     'crispy_forms',
+     'rest_framework',
+
 
 ]
 

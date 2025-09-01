@@ -54,7 +54,7 @@ from .models import (
     User, Category, Carousel, Tag, Post, Article,
     Categorys, Brand, VehicleModel, Trim, ManufactureYear,
     Condition, FuelOption, Color, EngineType, DriveTerrain,
-    Vas, State, Town
+    Vas, State, Town,InnerColor
 )
 
 from .models import Vehicle
@@ -77,6 +77,7 @@ admin.site.register(ManufactureYear)
 admin.site.register(Condition)
 admin.site.register(FuelOption)
 admin.site.register(Color)
+admin.site.register(InnerColor)
 admin.site.register(EngineType)
 admin.site.register(DriveTerrain)
 admin.site.register(Vas)

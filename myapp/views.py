@@ -42,7 +42,7 @@ from .models import Category, Carousel
 
 from django.views.generic import ListView
 from .models import Category, Carousel, Brand, VehicleModel, Trim, ManufactureYear, Vehicle
-
+import hashlib
 # class HomeView(ListView):
 #     model = Category
 #     template_name = 'home.html'
@@ -218,14 +218,16 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 
 
-class HomeView(ListView):
+class HomeViewV1(ListView):
     model = Vehicle
     template_name = 'myapp/home.html'
     context_object_name = 'vehicles'
     paginate_by = 10
 
     def get_queryset(self):
-        queryset = super().get_queryset().filter(is_available=True).order_by('-created_at')
+        # queryset = super().get_queryset().filter(is_available=True).order_by('-created_at')
+        queryset = Vehicle.objects.filter(is_available=True).order_by('-created_at')
+
         
         # Get filter parameters from the request
         brand_id = self.request.GET.get('brand')
@@ -234,6 +236,8 @@ class HomeView(ListView):
         state_id = self.request.GET.get('state')
         town_id = self.request.GET.get('town')
         category_id = self.request.GET.get('category')
+        color = self.request.GET.get('color')
+        inner_color = self.request.GET.get('inner_color')
 
         
         # New filters for price and year range
@@ -241,6 +245,8 @@ class HomeView(ListView):
         price_max = self.request.GET.get('price_max')
         year_min = self.request.GET.get('year_min')
         year_max = self.request.GET.get('year_max')
+
+       
 
         # Apply filters
         if brand_id:
@@ -255,7 +261,16 @@ class HomeView(ListView):
             queryset = queryset.filter(town_id=town_id)
         if category_id:
             queryset = queryset.filter(category_id=category_id)
-            
+        if color:
+            queryset = queryset.filter(color=color)
+        if inner_color:
+            queryset = queryset.filter(inner_color=inner_color)
+
+ 
+
+
+
+
         if price_min:
             queryset = queryset.filter(price__gte=price_min)
         if price_max:
@@ -280,6 +295,85 @@ class HomeView(ListView):
         ).prefetch_related('vas')
         
         return queryset
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.views.generic import ListView
+from django.http import HttpResponse, HttpResponseRedirect
+from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.models import Group, Permission
+from django.utils.decorators import method_decorator
+from django.db.models import Q
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.contrib import messages
+from django.template.loader import render_to_string
+from django.urls import reverse
+from django.apps import apps
+import hashlib
+from .models import (
+    Vehicle, Category, State, Town, Brand, VehicleModel, Trim, DealerProfile, InnerColor,
+    ManufactureYear, FuelOption, Color, EngineType, DriveTerrain, Vas, Condition
+)
+from django.contrib.auth import get_user_model
+from .forms import VehicleForm, DealerRegistrationForm, AdminToolForm
+
+User = get_user_model()
+
+class HomeView(ListView):
+    model = Vehicle
+    template_name = 'myapp/home.html'
+    context_object_name = 'vehicles'
+    
+    def get_queryset(self):
+        queryset = Vehicle.objects.filter(is_available=True).order_by('-created_at')
+        
+        category_id = self.request.GET.get('category')
+        state_id = self.request.GET.get('state')
+        town_id = self.request.GET.get('town')
+        brand_id = self.request.GET.get('brand')
+        model_id = self.request.GET.get('model')
+        trim_id = self.request.GET.get('trim')
+        min_year = self.request.GET.get('min_year')
+        max_year = self.request.GET.get('max_year')
+        min_price = self.request.GET.get('min_price')
+        max_price = self.request.GET.get('max_price')
+        color = self.request.GET.get('color')
+        inner_color = self.request.GET.get('inner_color')
+
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+        if state_id:
+            queryset = queryset.filter(state_id=state_id)
+        if town_id:
+            queryset = queryset.filter(town_id=town_id)
+        if brand_id:
+            queryset = queryset.filter(brand_id=brand_id)
+        if model_id:
+            queryset = queryset.filter(vehicle_model_id=model_id)
+        if trim_id:
+            queryset = queryset.filter(trim_id=trim_id)
+        if min_year:
+            queryset = queryset.filter(manufacture_year__gte=min_year)
+        if max_year:
+            queryset = queryset.filter(manufacture_year__lte=max_year)
+        if min_price:
+            queryset = queryset.filter(price__gte=min_price)
+        if max_price:
+            queryset = queryset.filter(price__lte=max_price)
+        if color:
+            queryset = queryset.filter(color=color)
+        if inner_color:
+            queryset = queryset.filter(inner_color=inner_color)
+        
+        return queryset.select_related('brand', 'vehicle_model', 'trim')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['categories'] = Category.objects.all()
+        context['brands'] = Brand.objects.all()
+        context['states'] = State.objects.all()
+        context['inner_colors'] = InnerColor.objects.all()
+        context['colors'] = Vehicle.objects.values_list('color', flat=True).distinct()
+        return context
 
 
 
@@ -687,7 +781,7 @@ def edit_vehicle(request, pk):
 
 
 @login_required
-def upload_vehicle(request):
+def upload_vehiclev1(request):
     if request.method == 'POST':
         form = VehicleForm(request.POST, request.FILES)
         if form.is_valid():
@@ -696,6 +790,91 @@ def upload_vehicle(request):
             vehicle.save()
             messages.success(request, "Vehicle uploaded successfully!")
             return redirect('dashboard')
+    else:
+        form = VehicleForm()
+    
+    context = {
+        'form': form,
+        'brands': Brand.objects.all(),
+        'categories': Category.objects.all(),
+        'states': State.objects.all(),
+        'trims': Trim.objects.all(),
+        'inner_colors': InnerColor.objects.all()
+    }
+    return render(request, 'myapp/upload_vehicle.html', context)
+
+@login_required
+def upload_vehicle(request):
+    """
+    Handles the vehicle upload form submission, including image duplicate checks.
+    
+    The view provides the necessary context for dynamic form fields, ensuring
+    the HTMX functionality works correctly on both GET and invalid POST requests.
+    """
+    if request.method == 'POST':
+        form = VehicleForm(request.POST, request.FILES)
+        if form.is_valid():
+            # List of image fields to check
+            image_fields = ['image', 'image2', 'image3', 'image4', 'image5', 'image6', 'image7', 'image8', 'image9', 'image10']
+            
+            # Temporary set to hold hashes of newly uploaded images for intra-upload check
+            uploaded_hashes = set()
+            
+            # Check for intra-upload duplicates and database duplicates
+            for field_name in image_fields:
+                uploaded_file = request.FILES.get(field_name)
+                if uploaded_file:
+                    hasher = hashlib.sha256()
+                    for chunk in uploaded_file.chunks():
+                        hasher.update(chunk)
+                    image_hash = hasher.hexdigest()
+                    
+                    if image_hash in uploaded_hashes:
+                        messages.error(request, "Please upload distinct images. A duplicate was found among the uploaded files.")
+                        return redirect('dashboard')
+                    
+                    # Check database for existing hash in any image field
+                    # The Q object is used to build a complex query across multiple fields
+                    q_objects = Q()
+                    for hash_field in [f'{f}_hash' for f in image_fields]:
+                        q_objects |= Q(**{hash_field: image_hash})
+                    
+                    if Vehicle.objects.filter(q_objects).exists():
+                        messages.error(request, "This photo already exists in the database.")
+                        return redirect('dashboard')
+                    
+                    uploaded_hashes.add(image_hash)
+            
+            # Save the vehicle and its image hashes
+            vehicle = form.save(commit=False)
+            vehicle.seller = request.user
+            
+            # Manually set the image hash fields
+            for field_name in image_fields:
+                uploaded_file = request.FILES.get(field_name)
+                if uploaded_file:
+                    hasher = hashlib.sha256()
+                    for chunk in uploaded_file.chunks():
+                        hasher.update(chunk)
+                    image_hash = hasher.hexdigest()
+                    setattr(vehicle, f'{field_name}_hash', image_hash)
+            
+            vehicle.save()
+            form.save_m2m()
+            
+            messages.success(request, "Vehicle uploaded successfully!")
+            return redirect('dashboard')
+        else:
+            context = {
+                'form': form,
+                'brands': Brand.objects.all(),
+                'categories': Category.objects.all(),
+                'states': State.objects.all(),
+                'trims': Trim.objects.all(),
+                'inner_colors': InnerColor.objects.all()
+            }
+            messages.error(request, "There was an error in your submission. Please check the form and try again.")
+            return render(request, 'myapp/upload_vehicle.html', context)
     else:
         form = VehicleForm()
     
@@ -781,6 +960,7 @@ def operations_view(request):
         ('VAS', Vas),
         ('State', State),
         ('Town', Town),
+        ('Condition', Condition),
     ]
     
     user_permissions = request.user.get_all_permissions()
@@ -856,6 +1036,7 @@ def handle_admin_tool_form(request, model_name):
         'VAS': Vas,
         'State': State,
         'Town': Town,
+        'Condition': Condition,
     }
 
     model = model_map.get(model_name)
@@ -879,3 +1060,118 @@ def handle_admin_tool_form(request, model_name):
     form = AdminToolForm(model)
     html = render_to_string('myapp/partials/_admin_tools_forms.html', {'form': form, 'model_name': model_name}, request=request)
     return HttpResponse(html)
+
+
+
+
+import requests
+
+def fetch_vehicle_image(vin, image_size):
+    url = "https://zylalabs.com/api/9168/vin+image+capture+for+vehicles+api/16576/get+image"
+    params = {
+        "vin": vin,
+        "image size": image_size
+    }
+
+    response = requests.get(url, params=params)
+
+    if response.status_code == 200:
+        return response.json()  # or response.content if it's an image
+    else:
+        raise Exception(f"API request failed with status {response.status_code}: {response.text}")
+    
+
+from django.http import JsonResponse
+from django.views import View
+
+class VehicleImageView(View):
+    def get(self, request):
+        vin = request.GET.get("vin")
+        image_size = request.GET.get("image_size")
+
+        if not vin or not image_size:
+            return JsonResponse({"error": "Missing vin or image_size"}, status=400)
+
+        try:
+            image_data = fetch_vehicle_image(vin, image_size)
+            return JsonResponse(image_data)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+        
+# views.py
+import requests
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
+class VINImageSearchView(APIView):
+    def get(self, request):
+        vin = request.query_params.get("vin")
+        image_size = 300  # Hardcoded default
+
+        if not vin:
+            return Response({"error": "VIN is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # External API call
+        url = "https://zylalabs.com/api/9168/vin+image+capture+for+vehicles+api/16576/get+image"
+        params = {
+            "vin": vin,
+            "image size": image_size
+        }
+
+        try:
+            response = requests.get(url, params=params)
+            response.raise_for_status()
+            data = response.json()
+
+            # Extract and format response
+            formatted = {
+                "vin": vin,
+                "image_url": data.get("image_url"),  # Adjust key based on actual response
+                "details": data.get("text", "No details provided")  # Adjust key as needed
+            }
+
+            return Response(formatted, status=status.HTTP_200_OK)
+
+        except requests.exceptions.RequestException as e:
+            return Response({"error": str(e)}, status=status.HTTP_502_BAD_GATEWAY)
+        
+
+
+from django.http import JsonResponse
+import requests
+
+def VINImageDrive(request, vin):
+    image_size = 300
+
+    if not vin:
+        return JsonResponse({"error": "VIN is required."}, status=400)
+
+    url = "https://zylalabs.com/api/9168/vin+image+capture+for+vehicles+api/16576/get+image"
+    params = {
+        "vin": vin,
+        "image size": image_size
+    }
+
+
+    headers = {
+        "Authorization": "Bearer YOUR_API_KEY"
+    }
+
+
+    try:
+        # response = requests.get(url, params=params)
+        response = requests.get(url, params=params, headers=headers)
+        response.raise_for_status()
+        data = response.json()
+
+        formatted = {
+            "vin": vin,
+            "image_url": data.get("image_url"),
+            "details": data.get("text", "No details provided")
+        }
+
+        return JsonResponse(formatted, status=200)
+
+    except requests.exceptions.RequestException as e:
+        return JsonResponse({"error": str(e)}, status=502)

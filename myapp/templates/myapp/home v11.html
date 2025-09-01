@@ -11,33 +11,36 @@
 
 {% block content %}
 <div class="container my-5">
-<!-- carousel1 -->
+
+  <!-- carousel -->
+
+      <div id="myCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000" style="margin-bottom: 10px;">
+        <div class="carousel-inner">
+        {% for carousel in carousels %}
+          <div class="carousel-item active">
+            <img src="{{ carousel.image.url }}"  class="d-block w-100 img-fluid carol-image" alt="Car 1">
+          </div>
+          {% empty %}
+                <p>No categories available.</p>
+              {% endfor %}
 
 
+          <!-- <div class="carousel-item">
+            <img src="{% static 'images/network.jpeg' %}"   class="d-block w-100 img-fluid carol-image" alt="Car 2">
+          </div> -->
+          <!-- <div class="carousel-item">
+            <img src="{% static 'images/innovation.jpeg' %}"   class="d-block w-100 img-fluid carol-image" alt="Car 3">
+          </div> -->
+        </div>
 
-<div id="carouselExampleInterval" class="carousel slide mb-3" data-bs-ride="carousel">
-  <div class="carousel-inner">
-  {% for carousel in carousels %}
-  <div class="carousel-item {% if forloop.counter == 1 %}active{% endif %}" data-bs-interval="2000">
-    <img src="{{ carousel.image.url }}" class="d-block w-100" style="height: 200px; object-fit: cover;" alt="cat">
-  </div>
-{% empty %}
-  <p>No carousel available.</p>
-{% endfor %}
-
-  
-  </div>
-    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleInterval" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Previous</span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleInterval" data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Next</span>
-    </button>
-</div>
-
-
+        <!-- Optional controls -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon"></span>
+        </button>
+      </div>
 
     <!-- Filter  and CategorySection -->
          <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
@@ -58,7 +61,6 @@
         <button class="btn btn-primary px-4 mt-3 mt-md-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasFilter" aria-controls="offcanvasFilter">
             Filter Vehicles
         </button>
-      
     </div>
 
   <!-- Main Content: Vehicle List -->
@@ -206,26 +208,6 @@
                     </select>
                 </div>
                 
-                <!-- Exterior and Interior Colors -->
-    <div class="col-md-12">
-        <label for="color" class="form-label">Exterior Color</label>
-        <select name="color" id="color" class="form-select">
-            <option value="">All Colors</option>
-            {% for color in colors %}
-                <option value="{{ color }}">{{ color }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    
-    <div class="col-md-12">
-        <label for="inner_color" class="form-label">Interior Color</label>
-        <select name="inner_color" id="inner_color" class="form-select">
-            <option value="">All Colors</option>
-            {% for color in inner_colors %}
-                <option value="{{ color.id }}">{{ color.name }}</option>
-            {% endfor %}
-        </select>
-    </div>
                 <!-- Year Range -->
                 <div class="col-md-12">
                     <label for="year_min" class="form-label">Year From</label>
@@ -273,10 +255,244 @@
             </form>
         </div>
     </div>
+</div>
+
+<div>
+  KUNLE
+{% for post in posts %}
+  <h3>{{ post.title }}</h3>
+  <!-- <ul> -->
+    {% for tag in post.tags.all %}
+      <!-- <li>{{ tag.name }}</li> -->
+      {{ tag.name }},
+    {% empty %}
+      <!-- <li>No tags available.</li> -->
+    {% endfor %}
+  <!-- </ul> -->
+{% endfor %}
+
 
 </div>
 
+        <div class="row row-cols-4 row-cols-lg-5 g-2">
+          {% for category in categories %}
+            <div class="col text-center">
 
+              <div class="image-wrapper">
+                <img src="{{ category.image.url }}" alt="{{ category.name }}" class="car-image">
+              </div>
+
+              <!-- <img src="{{ category.image.url }}" alt="{{ category.name }}" class="img-fluid rounded car-image"> -->
+              <h6 class="mt-0 car-text">{{ category.name }}</h6>
+            </div>  
+          {% empty %}
+            <p>No categories available.</p>
+          {% endfor %}
+        </div>
+        <br>
+
+        
+        <div id="myCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
+        <div class="carousel-inner">
+        {% for carousel in carousels %}
+          <div class="carousel-item active">
+            <img src="{{ carousel.image.url }}"  class="d-block w-100 img-fluid carol-image" alt="Car 1">
+          </div>
+          {% empty %}
+                <p>No categories available.</p>
+              {% endfor %}
+
+
+          <!-- <div class="carousel-item">
+            <img src="{% static 'images/network.jpeg' %}"   class="d-block w-100 img-fluid carol-image" alt="Car 2">
+          </div> -->
+          <!-- <div class="carousel-item">
+            <img src="{% static 'images/innovation.jpeg' %}"   class="d-block w-100 img-fluid carol-image" alt="Car 3">
+          </div> -->
+        </div>
+
+        <!-- Optional controls -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon"></span>
+        </button>
+      </div>
+
+
+      <!-- product grid  -->
+<div class=" text-start">
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4">
+
+ <div class="col  product-frame">
+    <div class="product-image">
+      <img src="{% static 'images/New folder/Carosel/payment2.png' %}" alt="Car" class="rounded ">
+    </div>
+
+<div class="product-price">
+        <p> N50,000,0000.00 </p>
+    </div>
+      <div class="product-name">
+        <p>Toyota</p>
+    </div>
+   <div class="product-info">
+        <p>Super Clean Fuel Efficeint Elegance Spacious</p>
+    </div>
+       <div class="location-info">
+        Lagos, Ikorodu 
+    </div>
+      <div class="product-status">
+        Nigerian Used
+    </div>
+
+
+      <div class="Other-info">
+        Nigerian Used
+    </div>
+
+    </div>
+Goba
+
+ <div class="col text-start product-frame">
+    <div class="product-image">
+      <img src="{% static 'images/New folder/products/jaguar.webp' %}" alt="Car" class="rounded">
+    </div>
+
+<div class="product-pricea">
+  <p class="price-label">Price: <strong>₦{{ vehicle.price|intcomma }}</strong></p>
+        <!-- <p> N50,000,000.00 </p> -->
+    </div>
+      <div class="product-name">
+        <p>Toyota</p>
+    </div>
+   <div class="product-info">
+        <p>Super Clean Fuel Efficeint Elegance Spacio</p>
+    </div>
+       <div class="location-info">
+        Lagos, Ikorodu 
+    </div>
+      <div class="product-status">
+        Nigerian Used
+    </div>
+
+      <div class="Other-info">
+        Nigerian Used
+    </div>
+
+    </div>
+
+JADI 
+
+    {% for vehicle in vehicles %}
+    <div class="col text-start product-frame">
+        <div class="product-image">
+            <a href="{% url 'vehicle_detail' slug=vehicle.slug %}">
+                <img src="{{ vehicle.image.url }}" alt="{{ vehicle.brand.name }} {{ vehicle.vehicle_model.name }}" class="rounded">
+            </a>
+        </div>
+
+        <div class="product-pricea">
+            <p class="price-label">Price: <strong>₦{{ vehicle.price|intcomma }}</strong></p>
+        </div>
+
+        <div class="product-name">
+            <p>{{ vehicle.brand.name }} {{ vehicle.vehicle_model.name }}</p>
+        </div>
+
+        <div class="product-info">
+            <p>{{ vehicle.description|truncatechars:50 }}</p>
+        </div>
+
+        <div class="location-info">
+            {{ vehicle.town.name }}, {{ vehicle.state.name }}
+        </div>
+
+        <div class="product-status">
+            {{ vehicle.condition.name }}
+        </div>
+
+        <div class="Other-info">
+            {{ vehicle.manufacture_year.year }}
+        </div>
+    </div>
+
+    {% empty %}
+        <p>No vehicles match your criteria.</p>
+    {% endfor %}
+
+
+
+    </div>
+  </div>
+
+
+
+
+
+Second
+
+  <!-- Second  -->
+   <div class=" text-start">
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4">
+
+
+  {% for vehicle in alukuku %}
+
+ <div class="col text-start product-frame">
+
+    <div class="product-image">
+      <img src="{{ vehicle.image.url }}" alt="Car" class="rounded">
+    </div>
+
+<div class="product-info">
+  
+  <div class="product-price">
+    <p class="price-label">Price: <strong>₦{{ vehicle.price|intcomma }}</strong></p>
+  </div>
+
+    </div>
+      <div class="product-name">
+        <p>{{ vehicle.brand.name }} {{ vehicle.vehicle_model.name }} {{ vehicle.trim.name }}</p>
+    </div>
+   <div class="product-info">
+        <p>Super Clean Fuel Efficeint Elegance Spacio</p>
+    </div>
+       <div class="location-info">
+        Lagos, Ikorodu 
+    </div>
+      <div class="product-status">
+        Nigerian Used
+    </div>
+
+
+      <div class="Other-info">
+        Nigerian Used
+    </div>
+
+    </div>
+      {% empty %}
+    <p>No vehicles match your criteria.</p>
+  {% endfor %}
+
+    </div>
+
+
+  </div>
+
+
+
+  <form method="POST" action="/submit">
+  <label for="fruits">Choose your fruits:</label><br>
+  <select name="fruits[]" multiple size="4">
+    <option value="apple">Apple</option>
+    <option value="banana">Banana</option>
+    <option value="mango">Mango</option>
+    <option value="orange">Orange</option>
+  </select>
+  <br><br>
+  <input type="submit" value="Submit">
+</form>
 
 
     {% endblock %}
