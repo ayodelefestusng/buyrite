@@ -1,46 +1,322 @@
-# Standard library
-import hashlib
-import requests
-
-# Django core
+from django.shortcuts import render
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import (
-    HttpResponse, JsonResponse, HttpResponseRedirect, HttpResponseServerError
+    HttpResponse,
+    JsonResponse,
+    HttpResponseRedirect,
+    HttpResponseServerError
 )
-from django.views import View
-from django.views.generic import ListView, DetailView
+from .models import *
+from django.utils.timezone import now
+from .forms import *
+from django.shortcuts import render, get_object_or_404, redirect
+from django.views.generic import ListView
+from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.models import Group, Permission
 from django.utils.decorators import method_decorator
-from django.utils.timezone import now
+from django.db.models import Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.contrib import messages
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.apps import apps
-from django.db.models import Q, F
-from django.contrib import messages
-from django.contrib.auth import get_user_model
-
-# Django REST Framework
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-
-# Local apps
 from .models import (
-    Vehicle, Category, State, Town, Brand, VehicleModel, Trim, DealerProfile,
-    InnerColor, ManufactureYear, FuelOption, Color, EngineType, DriveTerrain,
-    Vas, Condition, Carousel, Post, Article
+    Vehicle, Category, State, Town, Brand, VehicleModel, Trim, DealerProfile, InnerColor,
+    ManufactureYear, FuelOption, Color, EngineType, DriveTerrain, Vas
 )
-from .forms import (
-    VehicleForm, DealerRegistrationForm, AdminToolForm, PostForm, VehicleForm1
-)
+from django.contrib.auth import get_user_model
+from .forms import VehicleForm, DealerRegistrationForm, AdminToolForm
 
-# Auth user model
+# Create your views here.
+# def home(request):
+   
+#    categories = Category.objects.all() 
+#    carousels = Carousel.objects.all() 
+#    context={"categories":categories,"carousels":carousels,}
+#    return render(request,"home.html", context)
+
+from django.views.generic import ListView,DetailView
+from .models import Category, Carousel
+
+
+from django.views.generic import ListView
+from .models import Category, Carousel, Brand, VehicleModel, Trim, ManufactureYear, Vehicle
+import hashlib
+# class HomeView(ListView):
+#     model = Category
+#     template_name = 'home.html'
+#     context_object_name = 'categories'
+
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context['carousels'] = Carousel.objects.all()
+#         return context
+    
+
+def car_view(request):
+    return render(request, 'car.html')
+
+
+# views.py
+from django.shortcuts import render, redirect
+from .forms import PostForm
+
+def create_post(request):
+    if request.method == 'POST':
+        form = PostForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('home')  # Replace with your actual URL
+    else:
+        form = PostForm()
+    return render(request, 'create_post.html', {'form': form})
+
+
+
+class MODEL_NAMEDetailView(DetailView):
+    model = Category
+    template_name = "details.html"
+  
+# In your app's views.py
+from django.views.generic import DetailView
+from .models import Article
+
+class ArticleDetailView(DetailView):
+    model = Article
+    template_name = 'articles/article_detail.html'
+    slug_url_kwarg = 'slug' # Specify the URL keyword argument for the slug
+ 
+    slug_field = 'slug' # Specify the model field to use for slug lookup
+   
+
+
+
+
+from django.views.generic import ListView
+from .models import Article
+
+class ArticleListView(ListView):
+    model = Article
+    template_name = 'articles/article_list.html'
+    context_object_name = 'articles'
+    paginate_by = 10  # Optional: adds pagination
+    ordering = ['-published_date']  # Newest first
+
+
+
+
+
+# class HomeView(ListView):
+#     model = Category
+#     template_name = 'home.html'
+#     context_object_name = 'categories'
+
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+
+#         # Static content
+#         context['carousels'] = Carousel.objects.all()
+#         context['brands'] = Brand.objects.all()
+#         context['models'] = VehicleModel.objects.all()
+#         context['trims'] = Trim.objects.all()
+#         context['years'] = ManufactureYear.objects.all()
+
+#         context['posts'] = Post.objects.all()
+#         context['alukuku'] = Vehicle.objects.all()
+
+#         # Filtering logic
+#         vehicles = Vehicle.objects.filter(is_available=True)
+
+#         brand_id = self.request.GET.get('brand')
+#         model_id = self.request.GET.get('model')
+#         trim_id = self.request.GET.get('trim')
+#         year_id = self.request.GET.get('year')
+
+#         if brand_id:
+#             vehicles = vehicles.filter(brand_id=brand_id)
+#         if model_id:
+#             vehicles = vehicles.filter(vehicle_model_id=model_id)
+#         if trim_id:
+#             vehicles = vehicles.filter(trim_id=trim_id)
+#         if year_id:
+#             vehicles = vehicles.filter(manufacture_year_id=year_id)
+
+#         context['vehicles'] = vehicles
+#         return context
+
+
+
+
+from django.views.generic import ListView
+from .models import Vehicle, Brand, Category, VehicleModel, Trim, ManufactureYear, Carousel, Post
+from django.db.models import F
+
+class HomeView1(ListView):
+    model = Vehicle
+    template_name = 'home.html'
+    context_object_name = 'vehicles'
+    paginate_by = 10  # Optional: Adds pagination for large lists
+
+    def get_queryset(self):
+        queryset = super().get_queryset().filter(is_available=True).order_by('-created_at') # Add .order_by()
+        brand_id = self.request.GET.get('brand')
+        model_id = self.request.GET.get('model')
+        trim_id = self.request.GET.get('trim')
+        year_id = self.request.GET.get('year')
+        
+        if brand_id:
+            queryset = queryset.filter(brand_id=brand_id)
+        if model_id:
+            queryset = queryset.filter(vehicle_model_id=model_id)
+        if trim_id:
+            queryset = queryset.filter(trim_id=trim_id)
+        if year_id:
+            queryset = queryset.filter(manufacture_year_id=year_id)
+
+        # Prefetch related objects to avoid N+1 query problem
+        queryset = queryset.select_related('brand', 'vehicle_model', 'trim', 'manufacture_year', 'condition', 'fuel_option', 'color', 'engine_type', 'drive_terrain', 'state', 'town', 'category').prefetch_related('vas')
+        return queryset
+
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Pass filter options for the search forms
+        context['brands'] = Brand.objects.all()
+        context['models'] = VehicleModel.objects.all()
+        context['trims'] = Trim.objects.all()
+        context['years'] = ManufactureYear.objects.all()
+        context['categories'] = Category.objects.all()
+        
+        # Pass static content that's not related to the main vehicle list
+        context['carousels'] = Carousel.objects.all()
+        context['posts'] = Post.objects.all()
+        
+        return context
+
+# myapp/views.py
+from django.shortcuts import render
+from django.views.generic import ListView
+from myapp.models import (
+    Vehicle, Brand, VehicleModel, Trim, ManufactureYear,
+    Category, Carousel, Post
+)
+from django.db.models import Q
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+
+# myapp/views.py
+from django.shortcuts import render
+from django.views.generic import ListView
+from myapp.models import (
+    Vehicle, Brand, VehicleModel, Trim, ManufactureYear,
+    State, Town, Category, Carousel, Post
+)
+from django.db.models import Q
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+
+
+class HomeViewV1(ListView):
+    model = Vehicle
+    template_name = 'myapp/home.html'
+    context_object_name = 'vehicles'
+    paginate_by = 10
+
+    def get_queryset(self):
+        # queryset = super().get_queryset().filter(is_available=True).order_by('-created_at')
+        queryset = Vehicle.objects.filter(is_available=True).order_by('-created_at')
+
+        
+        # Get filter parameters from the request
+        brand_id = self.request.GET.get('brand')
+        model_id = self.request.GET.get('model')
+        trim_id = self.request.GET.get('trim')
+        state_id = self.request.GET.get('state')
+        town_id = self.request.GET.get('town')
+        category_id = self.request.GET.get('category')
+        color = self.request.GET.get('color')
+        inner_color = self.request.GET.get('inner_color')
+
+        
+        # New filters for price and year range
+        price_min = self.request.GET.get('price_min')
+        price_max = self.request.GET.get('price_max')
+        year_min = self.request.GET.get('year_min')
+        year_max = self.request.GET.get('year_max')
+
+       
+
+        # Apply filters
+        if brand_id:
+            queryset = queryset.filter(brand_id=brand_id)
+        if model_id:
+            queryset = queryset.filter(vehicle_model_id=model_id)
+        if trim_id:
+            queryset = queryset.filter(trim_id=trim_id)
+        if state_id:
+            queryset = queryset.filter(state_id=state_id)
+        if town_id:
+            queryset = queryset.filter(town_id=town_id)
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+        if color:
+            queryset = queryset.filter(color=color)
+        if inner_color:
+            queryset = queryset.filter(inner_color=inner_color)
+
+ 
+
+
+
+
+        if price_min:
+            queryset = queryset.filter(price__gte=price_min)
+        if price_max:
+            queryset = queryset.filter(price__lte=price_max)
+        
+        # Use Q objects for inclusive year range filter
+        year_filter = Q()
+        if year_min and year_max:
+            year_filter = Q(manufacture_year__year__range=(year_min, year_max))
+        elif year_min:
+            year_filter = Q(manufacture_year__year__gte=year_min)
+        elif year_max:
+            year_filter = Q(manufacture_year__year__lte=year_max)
+
+        queryset = queryset.filter(year_filter)
+
+        # Prefetch related objects to avoid N+1 query problem
+        queryset = queryset.select_related(
+            'brand', 'vehicle_model', 'trim', 'manufacture_year', 'condition',
+            'fuel_option', 'color', 'engine_type', 'drive_terrain',
+            'state', 'town', 'category'
+        ).prefetch_related('vas')
+        
+        return queryset
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.views.generic import ListView
+from django.http import HttpResponse, HttpResponseRedirect
+from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.models import Group, Permission
+from django.utils.decorators import method_decorator
+from django.db.models import Q
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.contrib import messages
+from django.template.loader import render_to_string
+from django.urls import reverse
+from django.apps import apps
+import hashlib
+from .models import (
+    Vehicle, Category, State, Town, Brand, VehicleModel, Trim, DealerProfile, InnerColor,
+    ManufactureYear, FuelOption, Color, EngineType, DriveTerrain, Vas, Condition
+)
+from django.contrib.auth import get_user_model
+from .forms import VehicleForm, DealerRegistrationForm, AdminToolForm
+
 User = get_user_model()
-
-
-
 
 class HomeView(ListView):
     model = Vehicle
@@ -161,6 +437,43 @@ class HomeView(ListView):
 
         return context
 
+
+
+def load_models(request):
+    brand_id = request.GET.get('brand')
+    models = VehicleModel.objects.filter(brand_id=brand_id).order_by('name')
+    return render(request, 'myapp/partials/model_dropdown.html', {'models': models})
+
+def load_trims(request):
+    model_id = request.GET.get('model')
+    trims = Trim.objects.filter(vehicle_model_id=model_id).order_by('name')
+    return render(request, 'myapp/partials/trim_dropdown.html', {'trims': trims})
+    
+def load_towns(request):
+    state_id = request.GET.get('state')
+    towns = Town.objects.filter(state_id=state_id).order_by('name')
+    return render(request, 'myapp/partials/town_dropdown.html', {'towns': towns})
+
+def load_models(request):
+    brand_id = request.GET.get('brand')
+    models = VehicleModel.objects.filter(brand_id=brand_id).order_by('name')
+    return render(request, 'myapp/partials/model_dropdown.html', {'models': models})
+
+def load_trims(request):
+    model_id = request.GET.get('model')
+    trims = Trim.objects.filter(vehicle_model_id=model_id).order_by('name')
+    return render(request, 'myapp/partials/trim_dropdown.html', {'trims': trims})
+
+def load_years(request):
+    year_type = request.GET.get('type')
+    years = ManufactureYear.objects.all().order_by('-year')
+    return render(request, 'myapp/partials/year_dropdown.html', {'years': years, 'year_type': year_type})
+
+
+
+
+from django.db.models import F
+
 class VehicleDetailView(DetailView):
     model = Vehicle
     template_name = 'vehicle_detail.html'
@@ -209,6 +522,106 @@ class VehicleDetailView(DetailView):
 
         context['created_ago'] = created_ago
         return context
+
+#Gemini 
+# myapp/views.py
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
+from .forms import VehicleForm
+from .models import VehicleModel, Trim, Town, Vehicle, User
+from django.template.loader import render_to_string
+from django.contrib import messages
+
+@login_required
+def upload_vehicle11(request):
+    if request.method == 'POST':
+        form = VehicleForm(request.POST, request.FILES)
+        if form.is_valid():
+            vehicle = form.save(commit=False)
+            vehicle.seller = request.user # Automatically link the logged-in user
+            
+            # Auto-populate contact_phone if not provided and user has a phone number
+            if not vehicle.contact_phone and hasattr(request.user, 'phone') and request.user.phone:
+                vehicle.contact_phone = request.user.phone
+
+            vehicle.save()
+            form.save_m2m() # Save ManyToMany relationships after the main object is saved
+            messages.success(request, 'Vehicle uploaded successfully!')
+            return redirect('upload_vehicle_success') # Redirect to a success page or list
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = VehicleForm()
+        # Initial querysets for dynamic fields when form is first loaded (GET request)
+        # These will be empty or set to defaults
+        form.fields['vehicle_model'].queryset = VehicleModel.objects.none()
+        form.fields['trim'].queryset = Trim.objects.none()
+        form.fields['town'].queryset = Town.objects.none()
+
+    return render(request, 'myapp/upload_vehicle.html', {'form': form})
+
+# HTMX endpoints for dynamic dropdowns
+
+def load_models(request):
+    brand_id = request.GET.get('brand') # The name attribute of the select element
+    models = VehicleModel.objects.filter(brand_id=brand_id).order_by('name')
+    # Render partial HTML for vehicle_model select field
+    html = render_to_string('myapp/partials/vehicle_model_options.html', {'models': models})
+    # HTMX expects the entire updated element, not just options
+    return HttpResponse(f'<div id="div_id_vehicle_model" class="mb-3">{html}</div>')
+
+def load_trims(request):
+    model_id = request.GET.get('vehicle_model') # The name attribute of the select element
+    trims = Trim.objects.filter(vehicle_model_id=model_id).order_by('name')
+    # Render partial HTML for trim select field
+    html = render_to_string('myapp/partials/trim_options.html', {'trims': trims})
+    return HttpResponse(f'<div id="div_id_trim" class="mb-3">{html}</div>')
+
+def load_towns(request):
+    state_id = request.GET.get('state') # The name attribute of the select element
+    towns = Town.objects.filter(state_id=state_id).order_by('name')
+    # Render partial HTML for town select field
+    html = render_to_string('myapp/partials/town_options.html', {'towns': towns})
+    return HttpResponse(f'<div id="div_id_town" class="mb-3">{html}</div>')
+
+
+def load_towns2(request):
+    """
+    Returns a list of towns for the given state as an HTML snippet.
+    """
+    state_id = request.GET.get('state')
+    towns = Town.objects.filter(state_id=state_id).order_by('name')
+    return render(request, 'home/town_options.html', {'towns': towns})
+
+
+@login_required
+def upload_vehicle_success(request):
+    return render(request, 'myapp/upload_success.html')
+
+
+
+# myapp/views.py
+from django.shortcuts import render, get_object_or_404
+from django.views.generic import ListView
+from django.http import HttpResponse, HttpResponseRedirect
+from django.urls import reverse
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from django.db.models import Q
+
+from .models import Vehicle
+from .forms import VehicleForm1
+from django.shortcuts import render, get_object_or_404
+from django.views.generic import ListView
+from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from django.db.models import Q
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+from .models import Vehicle, Category, State, Town, Brand, VehicleModel, Trim
+from .forms import VehicleForm
 
 @method_decorator(login_required, name='dispatch')
 class DashboardView(ListView):
@@ -325,193 +738,6 @@ class DashboardView(ListView):
         return context
 
 
-
-@login_required
-def upload_vehicle(request):
-    """
-    Handles the vehicle upload form submission, including image duplicate checks.
-    """
-    if request.method == 'POST':
-        form = VehicleForm(request.POST, request.FILES)
-        
-        # Debug: Print form data and errors
-        print("Form data:", request.POST)
-        print("Files:", dict(request.FILES))
-        
-        if form.is_valid():
-            print("Form is valid")
-            # List of image fields to check
-            image_fields = ['image', 'image2', 'image3', 'image4', 'image5', 'image6', 'image7', 'image8', 'image9', 'image10']
-            
-            # Store file content and hashes
-            file_contents = {}
-            image_hashes = {}
-            
-            # Check for intra-upload duplicates and database duplicates
-            for field_name in image_fields:
-                uploaded_file = request.FILES.get(field_name)
-                if uploaded_file:
-                    try:
-                        # Read and store file content
-                        file_content = b''
-                        for chunk in uploaded_file.chunks():
-                            file_content += chunk
-                        
-                        # Calculate hash
-                        image_hash = hashlib.sha256(file_content).hexdigest()
-                        image_hashes[field_name] = image_hash
-                        file_contents[field_name] = file_content
-                        
-                        # Check for intra-upload duplicates
-                        if image_hash in image_hashes.values():
-                            # Make sure we're not comparing the same field
-                            for other_field, other_hash in image_hashes.items():
-                                if other_field != field_name and other_hash == image_hash:
-                                    messages.error(request, "Please upload distinct images. A duplicate was found among the uploaded files.")
-                                    return redirect('upload_vehicle')
-                        
-                        # Check database for existing hash
-                        q_objects = Q()
-                        for hash_field in [f'{f}_hash' for f in image_fields]:
-                            q_objects |= Q(**{hash_field: image_hash})
-                        
-                        if Vehicle.objects.filter(q_objects).exists():
-                            messages.error(request, "This photo already exists in the database.")
-                            return redirect('upload_vehicle')
-                            
-                    except Exception as e:
-                        messages.error(request, f"Error processing image: {str(e)}")
-                        return redirect('upload_vehicle')
-            
-            # Save the vehicle and its image hashes
-            try:
-                vehicle = form.save(commit=False)
-                vehicle.seller = request.user
-                
-                # Set the image hash fields
-                for field_name, image_hash in image_hashes.items():
-                    setattr(vehicle, f'{field_name}_hash', image_hash)
-                
-                vehicle.save()
-                form.save_m2m()
-                
-                messages.success(request, "Vehicle uploaded successfully!")
-                return redirect('dashboard')
-                
-            except Exception as e:
-                messages.error(request, f"Error saving vehicle: {str(e)}")
-                return redirect('upload_vehicle')
-                
-        else:
-            print("Form errors:", form.errors)
-            messages.error(request, "There was an error in your submission. Please check the form and try again.")
-    
-    else:
-        form = VehicleForm()
-    
-    context = {
-        'form': form,
-        'brands': Brand.objects.all(),
-        'categories': Category.objects.all(),
-        'states': State.objects.all(),
-        'trims': Trim.objects.all(),
-        'inner_colors': InnerColor.objects.all()
-    }
-    return render(request, 'myapp/upload_vehicle.html', context)
-
-# my_app/views.py
-def load_models(request):
-    brand_id = request.GET.get('brand')
-    models = VehicleModel.objects.filter(brand_id=brand_id).order_by('name')
-    return render(request, 'myapp/partials/vehicle_model_dropdown.html', {'models': models})
-
-
-def load_trims(request):
-    print("=" * 50)
-    print("LOAD_TRIMS VIEW CALLED")
-    print("GET parameters:", dict(request.GET))
-    print("POST parameters:", dict(request.POST))
-    print("=" * 50)
-    
-    model_id = request.GET.get('vehicle_model')
-    print(f"Model ID received: '{model_id}'")
-    
-    if not model_id:
-        print("No model_id provided")
-        return HttpResponse('<option value="">Select a model first</option>')
-    
-    try:
-        trims = Trim.objects.filter(vehicle_model_id=model_id).order_by('name')
-        print(f"Found {trims.count()} trims for model {model_id}")
-        
-        return render(request, 'myapp/partials/trim_dropdown.html', {'trims': trims})
-        
-    except Exception as e:
-        print(f"Error in load_trims: {e}")
-        return HttpResponse('<option value="">Error loading trims</option>')
-
-def load_towns(request):
-    state_id = request.GET.get('state')
-    if not state_id:
-        return HttpResponse('<option value="">Select a state first</option>')
-    
-    towns = Town.objects.filter(state_id=state_id).order_by('name')
-    return render(request, 'myapp/partials/town_dropdown.html', {'towns': towns})
-
-
-# HTMX views for dynamic dropdowns
-# def get_models_by_brand(request, brand_id):
-#     """
-#     Returns the HTML for the vehicle model dropdown based on the selected brand.
-#     This view is called via an HTMX GET request.
-#     """
-#     brand = get_object_or_404(Brand, pk=brand_id)
-#     vehicle_models = VehicleModel.objects.filter(brand=brand).order_by('name')
-#     context = {
-#         'vehicle_models': vehicle_models,
-#     }
-#     return render(request, 'myapp/partials/_dynamic_models.html', context)
-
-
-# def get_trims_by_model(request, model_id):
-#     """
-#     Returns the HTML for the trim dropdown based on the selected vehicle model.
-#     This view is called via an HTMX GET request.
-#     """
-#     vehicle_model = get_object_or_404(VehicleModel, pk=model_id)
-#     trims = Trim.objects.filter(vehicle_model=vehicle_model).order_by('name')
-#     context = {
-#         'trims': trims,
-#     }
-#     return render(request, 'myapp/partials/_dynamic_trims.html', context)
-
-
-
-# def get_towns_by_state(request, state_id):
-#     """Returns a partial HTML for towns based on the selected state."""
-#     towns = Town.objects.filter(state_id=state_id).order_by('name')
-#     return render(request, 'myapp/partials/_dynamic_towns.html', {'towns': towns})
-
-def get_models_by_brandv101(request, brand_id):
-    """Returns a partial HTML for models based on the selected brand."""
-    models = VehicleModel.objects.filter(brand_id=brand_id).order_by('name')
-    return render(request, 'myapp/partials/_dynamic_models.html', {'models': models})
-
-
-
-
-
-
-def load_years(request):
-    year_type = request.GET.get('type')
-    years = ManufactureYear.objects.all().order_by('-year')
-    return render(request, 'myapp/partials/year_dropdown.html', {'years': years, 'year_type': year_type})
-
-
-@login_required
-def upload_vehicle_success(request):
-    return render(request, 'myapp/upload_success.html')
-
 @login_required
 def mark_as_sold(request, pk):
     """Marks a vehicle as sold and returns the updated vehicle list."""
@@ -527,9 +753,6 @@ def mark_as_sold(request, pk):
         
         return HttpResponse('Unauthorized', status=403)
     return HttpResponse('Invalid Request', status=400)
-
-
-
 
 
 @login_required
@@ -554,6 +777,133 @@ def edit_vehicle(request, pk):
         form = VehicleForm1(instance=vehicle)
 
     return render(request, 'myapp/partials/_edit_vehicle_modal.html', {'form': form, 'vehicle': vehicle})
+
+
+
+@login_required
+def upload_vehiclev1(request):
+    if request.method == 'POST':
+        form = VehicleForm(request.POST, request.FILES)
+        if form.is_valid():
+            vehicle = form.save(commit=False)
+            vehicle.owner = request.user
+            vehicle.save()
+            messages.success(request, "Vehicle uploaded successfully!")
+            return redirect('dashboard')
+    else:
+        form = VehicleForm()
+    
+    context = {
+        'form': form,
+        'brands': Brand.objects.all(),
+        'categories': Category.objects.all(),
+        'states': State.objects.all(),
+        'trims': Trim.objects.all(),
+        'inner_colors': InnerColor.objects.all()
+    }
+    return render(request, 'myapp/upload_vehicle.html', context)
+
+@login_required
+def upload_vehicle(request):
+    """
+    Handles the vehicle upload form submission, including image duplicate checks.
+    
+    The view provides the necessary context for dynamic form fields, ensuring
+    the HTMX functionality works correctly on both GET and invalid POST requests.
+    """
+    if request.method == 'POST':
+        form = VehicleForm(request.POST, request.FILES)
+        print ("form", form)
+        if form.is_valid():
+            # List of image fields to check
+            image_fields = ['image', 'image2', 'image3', 'image4', 'image5', 'image6', 'image7', 'image8', 'image9', 'image10']
+            
+            # Temporary set to hold hashes of newly uploaded images for intra-upload check
+            uploaded_hashes = set()
+            
+            # Check for intra-upload duplicates and database duplicates
+            for field_name in image_fields:
+                uploaded_file = request.FILES.get(field_name)
+                if uploaded_file:
+                    hasher = hashlib.sha256()
+                    for chunk in uploaded_file.chunks():
+                        hasher.update(chunk)
+                    image_hash = hasher.hexdigest()
+                    
+                    if image_hash in uploaded_hashes:
+                        messages.error(request, "Please upload distinct images. A duplicate was found among the uploaded files.")
+                        return redirect('dashboard')
+                    
+                    # Check database for existing hash in any image field
+                    # The Q object is used to build a complex query across multiple fields
+                    q_objects = Q()
+                    for hash_field in [f'{f}_hash' for f in image_fields]:
+                        q_objects |= Q(**{hash_field: image_hash})
+                    
+                    if Vehicle.objects.filter(q_objects).exists():
+                        messages.error(request, "This photo already exists in the database.")
+                        return redirect('dashboard')
+                    
+                    uploaded_hashes.add(image_hash)
+            
+            # Save the vehicle and its image hashes
+            vehicle = form.save(commit=False)
+            vehicle.seller = request.user
+            
+            # Manually set the image hash fields
+            for field_name in image_fields:
+                uploaded_file = request.FILES.get(field_name)
+                if uploaded_file:
+                    hasher = hashlib.sha256()
+                    for chunk in uploaded_file.chunks():
+                        hasher.update(chunk)
+                    image_hash = hasher.hexdigest()
+                    setattr(vehicle, f'{field_name}_hash', image_hash)
+            
+            vehicle.save()
+            form.save_m2m()
+            
+            messages.success(request, "Vehicle uploaded successfully!")
+            return redirect('dashboard')
+        else:
+            context = {
+                'form': form,
+                'brands': Brand.objects.all(),
+                'categories': Category.objects.all(),
+                'states': State.objects.all(),
+                'trims': Trim.objects.all(),
+                'inner_colors': InnerColor.objects.all()
+            }
+            messages.error(request, "There was an error in your submission. Please check the form and try again.")
+            return render(request, 'myapp/upload_vehicle.html', context)
+    else:
+        form = VehicleForm()
+    
+    context = {
+        'form': form,
+        'brands': Brand.objects.all(),
+        'categories': Category.objects.all(),
+        'states': State.objects.all(),
+        'trims': Trim.objects.all(),
+        'inner_colors': InnerColor.objects.all()
+    }
+    return render(request, 'myapp/upload_vehicle.html', context)
+
+
+
+
+
+
+def get_towns_by_state(request, state_id):
+    """Returns a partial HTML for towns based on the selected state."""
+    towns = Town.objects.filter(state_id=state_id).order_by('name')
+    return render(request, 'myapp/partials/_dynamic_towns.html', {'towns': towns})
+
+
+def get_models_by_brand(request, brand_id):
+    """Returns a partial HTML for models based on the selected brand."""
+    models = VehicleModel.objects.filter(brand_id=brand_id).order_by('name')
+    return render(request, 'myapp/partials/_dynamic_models.html', {'models': models})
 
 
 @login_required
@@ -716,6 +1066,8 @@ def handle_admin_tool_form(request, model_name):
 
 
 
+import requests
+
 def fetch_vehicle_image(vin, image_size):
     url = "https://zylalabs.com/api/9168/vin+image+capture+for+vehicles+api/16576/get+image"
     params = {
@@ -731,7 +1083,8 @@ def fetch_vehicle_image(vin, image_size):
         raise Exception(f"API request failed with status {response.status_code}: {response.text}")
     
 
-
+from django.http import JsonResponse
+from django.views import View
 
 class VehicleImageView(View):
     def get(self, request):
@@ -748,6 +1101,10 @@ class VehicleImageView(View):
             return JsonResponse({"error": str(e)}, status=500)
         
 # views.py
+import requests
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 
 class VINImageSearchView(APIView):
     def get(self, request):
@@ -782,6 +1139,9 @@ class VINImageSearchView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_502_BAD_GATEWAY)
         
 
+
+from django.http import JsonResponse
+import requests
 
 def VINImageDrive(request, vin):
     image_size = 300

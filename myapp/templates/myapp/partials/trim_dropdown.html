@@ -1,8 +1,9 @@
-<!-- myapp/templates/myapp/partials/trim_dropdown.html -->
-<label for="trim" class="form-label">Trim</label>
-<select name="trim" id="trim" class="form-select">
-    <option value="">All Trims</option>
-    {% for trim in trims %}
-        <option value="{{ trim.id }}">{{ trim.name }}</option>
-    {% endfor %}
-</select>
+<div class="form-group mb-4" id="div_id_trim">
+    <label for="id_trim" class="form-label">Trim</label>
+    <select name="trim" id="id_trim" class="form-select rounded-lg">
+        <option value="">---------</option>
+        {% for trim in trims %}
+            <option value="{{ trim.pk }}">{{ trim.name }}</option>
+        {% endfor %}
+    </select>
+</div>

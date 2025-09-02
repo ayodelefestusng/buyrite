@@ -1,4 +1,4 @@
-<!-- myapp/templates/myapp/partials/town_options.html -->
+<!-- myapp/templates/myapp/partials/town_options.html
 <label class="form-label" for="id_town">Town</label>
 <select name="town" id="id_town" class="form-select">
     <option value="">---------</option>
@@ -8,4 +8,13 @@
 </select>
 {% if form.town.errors %} {# Access errors from the main form object #}
     <div class="invalid-feedback d-block">{{ form.town.errors }}</div>
+{% endif %} -->
+
+
+
+
+<label for="{{ form.town.id_for_label }}" class="form-label">Town</label>
+{{ form.town }}
+{% if form.town.errors %}
+<div class="invalid-feedback d-block">{{ form.town.errors }}</div>
 {% endif %}

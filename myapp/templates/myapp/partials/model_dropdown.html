@@ -1,12 +1,9 @@
-<!-- myapp/templates/myapp/partials/model_dropdown.html -->
-<label for="model" class="form-label">Model</label>
-<select name="model" id="model" class="form-select"
-    hx-get="{% url 'load_trims' %}"
-    hx-target="#trim-container"
-    hx-swap="innerHTML"
-    hx-trigger="change">
-    <option value="">All Models</option>
-    {% for model in models %}
-        <option value="{{ model.id }}">{{ model.name }}</option>
-    {% endfor %}
+<label for="{{ form.vehicle_model.id_for_label }}" class="form-label">Vehicle Model</label>
+
+<select name="model" id="model" class="form-select">
+
+<option value="">---------</option>
+{% for model in models %}
+<option value="{{ model.pk }}">{{ model.name }}</option>
+{% endfor %}
 </select>

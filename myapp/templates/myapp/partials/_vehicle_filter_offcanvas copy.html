@@ -31,70 +31,66 @@ hx-on::after-request="this.closest('.offcanvas').bs.offcanvas('hide');">
         </select>
     </div>
 
-    <!-- State Field -->
-<div class="form-group mb-4">
-    <label for="id_state" class="form-label">State</label>
-    <select id="id_state" name="state" class="form-select rounded-lg"
-            hx-get="{% url 'load_towns' %}"
-            hx-target="#div_id_town"
-            hx-swap="outerHTML"
-            hx-trigger="change">
-        <option value="">---------</option>
-        {% for state in states %}
-            <option value="{{ state.id }}" {% if selected_state|stringformat:"d" == state.pk|stringformat:"d" %}selected{% endif %}>
-                {{ state.name }}
-            </option>
-        {% endfor %}
-    </select>
-</div>
+    <!-- State and Town Filters -->
+    <div class="mb-4">
+        <label for="id_state" class="form-label">State</label>
+        <select name="state" 
+                id="id_state" 
+                class="form-select rounded-lg shadow-sm"
+                hx-get="{% url 'get_towns_by_state' 0 %}"
+                hx-target="#id_town_container"
+                hx-trigger="change"
+                hx-swap="outerHTML">
+            <option value="">All States</option>
+            {% for state in states %}
+                <option value="{{ state.pk }}" {% if selected_state|stringformat:"d" == state.pk|stringformat:"d" %}selected{% endif %}>{{ state.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
 
-<div class="form-group mb-4" id="div_id_town">
-    <label for="id_town" class="form-label">Town</label>
-    <select name="town" id="id_town" class="form-select rounded-lg">
-        <option value="">---------</option>
-        {% for town in towns %}
-            <option value="{{ town.pk }}" {% if selected_town|stringformat:"d" == town.pk|stringformat:"d" %}selected{% endif %}>
-                {{ town.name }}
-            </option>
-        {% endfor %}
-    </select>
-</div>
+    <div id="id_town_container" class="mb-4">
+        <!-- HTMX will swap this with a dynamic town list -->
+        <label for="id_town" class="form-label">Town</label>
+        <select name="town" id="id_town" class="form-select rounded-lg shadow-sm">
+            <option value="">Select a State first</option>
+        </select>
+    </div>
 
     <!-- Brand and Model Filters -->
-
-    <!-- Brand Field -->
-<div class="form-group mb-4">
-            <label for="id_brand" class="form-label">Brand</label>
-            <select id="id_brand" name="brand" class="form-select rounded-lg"
-                    hx-get="{% url 'load_models' %}"
-                    hx-target="#div_id_vehicle_model"
-                    hx-swap="outerHTML"
-                    hx-trigger="change">
-                <option value="">---------</option>
-                {% for brand in brands %}
-                    <option value="{{ brand.id }}" {% if selected_brand|stringformat:"d" == brand.id|stringformat:"d" %}selected{% endif %}>
-                        {{ brand.name }}
-                    </option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="form-group mb-4" id="div_id_vehicle_model">
-            <label for="id_vehicle_model" class="form-label">Vehicle Model</label>
-            <select name="vehicle_model" id="id_vehicle_model" class="form-select rounded-lg">
-                <option value="">---------</option>
-                </select>
-        </div>
-
-        <div class="form-group mb-4" id="div_id_trim">
-            <label for="id_trim" class="form-label">Trim</label>
-            <select id="id_trim" name="trim" class="form-select rounded-lg">
-                <option value="">---------</option>
-                </select>
-        </div>
-
-        <button type="submit" class="btn btn-primary w-full rounded-lg shadow-md mt-4">Apply Filters</button>
+    <div class="mb-4">
+        <label for="id_brand" class="form-label">Brand</label>
+        <select name="brand" 
+                id="id_brand" 
+                class="form-select rounded-lg shadow-sm"
+                hx-get="{% url 'get_models_by_brand' 0 %}"
+                hx-target="#id_model_container"
+                hx-trigger="change"
+                hx-swap="outerHTML">
+            <option value="">All Brands</option>
+            {% for brand in brands %}
+                <option value="{{ brand.pk }}" {% if selected_brand|stringformat:"d" == brand.pk|stringformat:"d" %}selected{% endif %}>{{ brand.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
     
+    <div id="id_model_container" class="mb-4">
+        <!-- HTMX will swap this with a dynamic model list -->
+        <label for="id_model" class="form-label">Model</label>
+        <select name="model" id="id_model" class="form-select rounded-lg shadow-sm">
+            <option value="">Select a Brand first</option>
+        </select>
+    </div>
+
+    <!-- Trim Filter -->
+    <div class="mb-4">
+        <label for="id_trim" class="form-label">Trim</label>
+        <select name="trim" id="id_trim" class="form-select rounded-lg shadow-sm">
+            <option value="">All Trims</option>
+            {% for trim in trims %}
+                <option value="{{ trim.pk }}" {% if selected_trim|stringformat:"d" == trim.pk|stringformat:"d" %}selected{% endif %}>{{ trim.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
 
     <!-- Year Range Filters -->
     <div class="mb-4 grid grid-cols-2 gap-4">

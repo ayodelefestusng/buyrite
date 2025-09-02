@@ -2,8 +2,6 @@
 {% load static %}
 {% load humanize %}
 
-
-
 {% block title %}Upload Vehicle{% endblock %}
 
 {% block content %}
@@ -13,6 +11,7 @@
 <h1 class="text-3xl font-extrabold text-gray-900 text-center mb-6">Upload a Vehicle</h1>
 
 <!-- Flash messages -->
+
 {% if messages %}
 <ul class="list-none p-0 mb-4">
 {% for message in messages %}
@@ -25,11 +24,11 @@
 {% csrf_token %}
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <!-- Brand Field -->
+    <!-- Dropdown Fields -->
     <div class="form-group mb-4">
         <label for="{{ form.brand.id_for_label }}" class="form-label">Brand</label>
         <select id="{{ form.brand.id_for_label }}" name="{{ form.brand.name }}" class="form-select rounded-lg"
-                hx-get="{% url 'load_models' %}"
+                hx-get="/get_models/{this.value}/"
                 hx-target="#div_id_vehicle_model"
                 hx-swap="outerHTML"
                 hx-trigger="change">
@@ -42,91 +41,58 @@
         </select>
     </div>
 
-<!-- Vehicle Model Field -->
-<!-- Vehicle Model Field - Alternative approach -->
+    <div class="form-group mb-4" id="div_id_vehicle_model">
+        {% include "myapp/partials/_dynamic_models.html" with vehicle_models=form.vehicle_model.field.queryset %}
+    </div>
 
-
-<div class="form-group mb-4" id="div_id_vehicle_model">
-    <label for="{{ form.vehicle_model.id_for_label }}" class="form-label">Vehicle Model</label>
-    <select name="{{ form.vehicle_model.name }}" id="{{ form.vehicle_model.id_for_label }}" class="form-select rounded-lg"
-            hx-get="{% url 'load_trims' %}"
-            hx-target="#div_id_trim"
-            hx-swap="outerHTML"
-            hx-trigger="change">
-        <option value="">---------</option>
-        {% for model in form.vehicle_model.field.queryset %}
-            <option value="{{ model.pk }}" {% if form.vehicle_model.value == model.pk %}selected{% endif %}>
-                {{ model.name }}
-            </option>
-        {% endfor %}
-    </select>
-</div>
-
-<div class="form-group mb-4" id="div_id_trim">
-    <label for="id_trim" class="form-label">Trim</label>
-    <select id="id_trim" name="trim" class="form-select rounded-lg">
-        <option value="">---------</option>
-    </select>
-</div>
-
-
-
+    <div class="form-group mb-4" id="div_id_trim">
+        {% include "myapp/partials/_dynamic_trims.html" with trims=form.trim.field.queryset %}
+    </div>
     
-
-
-    <!-- Category Field -->
     <div class="form-group mb-4">
         <label for="{{ form.category.id_for_label }}" class="form-label">Category</label>
         {{ form.category }}
     </div>
 
-    <!-- Manufacture Year Field -->
     <div class="form-group mb-4">
         <label for="{{ form.manufacture_year.id_for_label }}" class="form-label">Manufacture Year</label>
         {{ form.manufacture_year }}
     </div>
     
-    <!-- Condition Field -->
     <div class="form-group mb-4">
         <label for="{{ form.condition.id_for_label }}" class="form-label">Condition</label>
         {{ form.condition }}
     </div>
     
-    <!-- Fuel Option Field -->
     <div class="form-group mb-4">
         <label for="{{ form.fuel_option.id_for_label }}" class="form-label">Fuel Option</label>
         {{ form.fuel_option }}
     </div>
 
-    <!-- Color Field -->
     <div class="form-group mb-4">
         <label for="{{ form.color.id_for_label }}" class="form-label">Color</label>
         {{ form.color }}
     </div>
 
-    <!-- Inner Color Field -->
     <div class="form-group mb-4">
         <label for="{{ form.inner_color.id_for_label }}" class="form-label">Inner Color</label>
         {{ form.inner_color }}
     </div>
 
-    <!-- Engine Type Field -->
     <div class="form-group mb-4">
         <label for="{{ form.engine_type.id_for_label }}" class="form-label">Engine Type</label>
         {{ form.engine_type }}
     </div>
 
-    <!-- Drive Terrain Field -->
     <div class="form-group mb-4">
         <label for="{{ form.drive_terrain.id_for_label }}" class="form-label">Drive Terrain</label>
         {{ form.drive_terrain }}
     </div>
 
-    <!-- State Field -->
     <div class="form-group mb-4">
         <label for="{{ form.state.id_for_label }}" class="form-label">State</label>
         <select id="{{ form.state.id_for_label }}" name="{{ form.state.name }}" class="form-select rounded-lg"
-                hx-get="{% url 'load_towns' %}"
+                hx-get="/get_towns/{this.value}/"
                 hx-target="#div_id_town"
                 hx-swap="outerHTML"
                 hx-trigger="change">
@@ -139,20 +105,12 @@
         </select>
     </div>
 
-    <!-- Town Field (will be updated by HTMX) -->
     <div class="form-group mb-4" id="div_id_town">
-        <label for="{{ form.town.id_for_label }}" class="form-label">Town</label>
-        <select name="{{ form.town.name }}" id="{{ form.town.id_for_label }}" class="form-select rounded-lg">
-            <option value="">---------</option>
-            {% for town in form.town.field.queryset %}
-                <option value="{{ town.pk }}" {% if form.town.value == town.pk %}selected{% endif %}>
-                    {{ town.name }}
-                </option>
-            {% endfor %}
-        </select>
+        {% include "myapp/partials/_dynamic_towns.html" with towns=form.town.field.queryset %}
     </div>
 
-    
+
+
     <div class="form-group mb-4">
         <label for="{{ form.mileage.id_for_label }}" class="form-label">Mileage</label>
         {{ form.mileage }}
@@ -203,9 +161,8 @@
         {{ form.negotiable }}
     </div>
     
-
-    <!-- ... rest of your form fields ... -->
 </div>
+
 <!-- Full-width fields -->
 <div class="form-group mb-4">
     <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
@@ -217,29 +174,12 @@
     {{ form.social_media }}
 </div>
 
- {# Many-to-Many - VAS #}
-                <div class="mb-3">
-                    <label class="form-label d-block">Value Added Services:</label>
-                    <div class="d-flex flex-wrap">
-                        {% for checkbox in form.vas %}
-                            <div class="form-check form-check-inline">
-                                {{ checkbox.tag }}
-                                <label class="form-check-label" for="{{ checkbox.id_for_label }}">
-                                    {{ checkbox.choice_label }}
-                                </label>
-                            </div>
-                        {% endfor %}
-                    </div>
-                    {% if form.vas.errors %}
-                        <div class="invalid-feedback d-block">{{ form.vas.errors }}</div>
-                    {% endif %}
-                </div>
+<div class="form-group mb-4">
+    <label for="{{ form.vas.id_for_label }}" class="form-label">Value Added Services</label>
+    {{ form.vas }}
+</div>
 
-
-
-
-
-<!-- Image fields (explicit approach - recommended) -->
+<!-- Image fields -->
 <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
     <div class="form-group mb-4">
         <label for="{{ form.image.id_for_label }}" class="form-label">Image 1 <span class="text-gray-500">(Required)</span></label>
@@ -288,8 +228,31 @@
 </form>
 
 </div>
+
 </div>
 
 
+<script>
+console.log("Debug: Template loaded");
 
+// Debug HTMX requests
+document.body.addEventListener('htmx:beforeRequest', function(evt) {
+    console.log('HTMX request:', evt.detail);
+});
+
+document.body.addEventListener('htmx:responseError', function(evt) {
+    console.log('HTMX error:', evt.detail);
+});
+
+// Debug form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            console.log('Form submitted');
+            console.log('Form data:', new FormData(form));
+        });
+    }
+});
+</script>
 {% endblock %}
